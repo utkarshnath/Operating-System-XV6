@@ -18,8 +18,9 @@ strcpy(char *s, char *t)
 int
 strcmp(const char *p, const char *q)
 {
-  while(*p && *p == *q)
+  while(*p && *p == *q){
     p++, q++;
+  }
   return (uchar)*p - (uchar)*q;
 }
 
