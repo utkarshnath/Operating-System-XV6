@@ -4,15 +4,17 @@
 
 char buf[512];
 
-char tolower( unsigned char ch) {
+char tolower(unsigned char ch)
+{
     if (ch >= 'A' && ch <= 'Z')
         ch = 'a' + (ch - 'A');
     return ch;
- }
+}
 
 int strcasecmp(char const *a, char const *b)
 {
-    for (;; a++, b++) {
+    for (;; a++, b++)
+    {
         int d = tolower((unsigned char)*a) - tolower((unsigned char)*b);
         if (d != 0 || !*a)
             return d;
@@ -64,7 +66,7 @@ void uniq(int fd, int cflag, int dflag, int iflag)
                         printf(1, "%d %s\n", countOccurence, curr);
                 }
             }
-            if (dflag)
+            else if (dflag)
             {
                 if (!strcasecmp(prev, curr))
                     duplicate = 1;
@@ -88,13 +90,18 @@ void uniq(int fd, int cflag, int dflag, int iflag)
         {
             if (!strcmp(prev, curr))
                 countOccurence++;
-            else if (strcmp(prev, "")) // if its not first line
+            else if (strcmp(prev, ""))
             {
-                printf(1, "%d %s\n", countOccurence, curr);
+                printf(1, "%d %s\n", countOccurence, prev);
                 countOccurence = 1;
             }
             if (i == n) //if curr line is the last line
-                printf(1, "%d %s\n", countOccurence, curr);
+            {
+                if (countOccurence > 1)
+                    printf(1, "%d %s\n", countOccurence, prev);
+                else
+                    printf(1, "%d %s\n", countOccurence, curr);
+            }
         }
         else if (dflag)
         {
@@ -121,16 +128,12 @@ void uniq(int fd, int cflag, int dflag, int iflag)
 
 int main(int argc, char *argv[])
 {
-    int fd, i;
+    int fd = 0, i;
 
-    if (argc <= 1)
-    {
-        uniq(0, 0, 0, 0);
-        exit();
-    }
+    char *filename = 0;
 
-    int cflag, dflag, iflag;
-    cflag = dflag = iflag = 0;
+    int cflag = 0, dflag = 0, iflag = 0;
+
     for (i = 1; i < argc; i++)
     {
         if (!strcmp(argv[i], "-c"))
@@ -147,15 +150,21 @@ int main(int argc, char *argv[])
         }
         else
         {
-            if ((fd = open(argv[i], 0)) < 0)
-            {
-                printf(1, "cat: cannot open %s\n", argv[i]);
-                exit();
-            }
-            uniq(fd, cflag, dflag, iflag);
-            close(fd);
+            filename = argv[i];
         }
     }
 
+    if (filename == 0) //no filename read through pipe
+        uniq(0, cflag, dflag, iflag);
+    else
+    {
+        if ((fd = open(filename, 0)) < 0)
+        {
+            printf(1, "cat: cannot open %s\n", argv[i]);
+            exit();
+        }
+        uniq(fd, cflag, dflag, iflag);
+        close(fd);
+    }
     exit();
 }
