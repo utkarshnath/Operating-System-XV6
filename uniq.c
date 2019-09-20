@@ -29,100 +29,145 @@ void uniq(int fd, int cflag, int dflag, int iflag)
     int countOccurence = 1;
     int duplicate = 0;
 
-    n = read(fd, buf, sizeof(buf));
-    if (n < 0)
-    {
-        printf(1, "cat: read error\n");
-        exit();
-    }
-
-    for (i = 0; i < n; i++)
-    {
-        l = 0;
-        while (buf[i] != '\n' && i < n) // read line by line
+    // n = read(fd, buf, sizeof(buf));
+    // if (n < 0)
+    // {
+    //     printf(1, "cat: read error\n");
+    //     exit();
+    // }
+    l = 0;
+    while((n = read(fd, buf, sizeof(buf))) > 0){
+        for (i = 0; i < n; i++)
         {
-            curr[l] = buf[i];
-            l++;
-            i++;
-        }
-        curr[l] = '\0';
+            
+            // if(i==n-1 && buf[i]!='\n'){
 
-        if (iflag)
-        {
-            if (cflag)
+            // }else{
+            //     l=0;
+            // }
+            while (buf[i] != '\n' && i < n) // read line by line
             {
-                if (!strcasecmp(prev, curr))
+                curr[l] = buf[i];
+                l++;
+                i++;
+            }
+            if(i==n){
+                break;
+            }else{
+                curr[l] = '\0';
+                l = 0;
+            }
+            
+
+            if (iflag)
+            {
+                if (cflag)
+                {
+                    if (!strcasecmp(prev, curr))
+                        countOccurence++;
+                    else if (strcmp(prev, ""))
+                    {
+                        printf(1, "%d %s\n", countOccurence, prev);
+                        countOccurence = 1;
+                    }
+                    // if (i == n) //if curr line is the last line
+                    // {
+                    //     if (countOccurence > 1)
+                    //         printf(1, "%d %s\n", countOccurence, prev);
+                    //     else
+                    //         printf(1, "%d %s\n", countOccurence, curr);
+                    // }
+                }
+                else if (dflag)
+                {
+                    if (!strcasecmp(prev, curr))
+                        duplicate = 1;
+                    else if (duplicate)
+                    {
+                        printf(1, "%s\n", prev);
+                        duplicate = 0;
+                    }
+                    // if (i == n && duplicate) //if curr line is the last line and is equal to prev
+                    //     printf(1, "%s\n", prev);
+                }
+                else
+                {
+                    if (strcasecmp(prev, curr) && strcmp(prev, ""))
+                        printf(1, "%s\n", prev);
+                    // if (i == n) //if curr line is the last line
+                    //     printf(1, "%s\n", prev);
+                }
+            }
+            else if (cflag)
+            {
+                if (!strcmp(prev, curr))
                     countOccurence++;
                 else if (strcmp(prev, ""))
                 {
                     printf(1, "%d %s\n", countOccurence, prev);
                     countOccurence = 1;
                 }
-                if (i == n) //if curr line is the last line
-                {
-                    if (countOccurence > 1)
-                        printf(1, "%d %s\n", countOccurence, prev);
-                    else
-                        printf(1, "%d %s\n", countOccurence, curr);
-                }
+                // if (i == n) //if curr line is the last line
+                // {
+                //     if (countOccurence > 1)
+                //         printf(1, "%d %s\n", countOccurence, prev);
+                //     else
+                //         printf(1, "%d %s\n", countOccurence, curr);
+                // }
             }
             else if (dflag)
             {
-                if (!strcasecmp(prev, curr))
+                if (!strcmp(prev, curr))
                     duplicate = 1;
                 else if (duplicate)
                 {
                     printf(1, "%s\n", prev);
                     duplicate = 0;
                 }
-                if (i == n && duplicate) //if curr line is the last line and is equal to prev
-                    printf(1, "%s\n", prev);
+                // if (i == n && duplicate) //if curr line is the last line and is equal to prev
+                //     printf(1, "%s\n", prev);
             }
             else
             {
-                if (strcasecmp(prev, curr) && strcmp(prev, ""))
+                if (strcmp(prev, curr) && strcmp(prev, ""))
                     printf(1, "%s\n", prev);
-                if (i == n) //if curr line is the last line
-                    printf(1, "%s\n", prev);
+                // if (i == n) //if curr line is the last line
+                //     printf(1, "%s\n", curr);
             }
+            strcpy(prev, curr);
         }
-        else if (cflag)
-        {
-            if (!strcmp(prev, curr))
-                countOccurence++;
-            else if (strcmp(prev, ""))
-            {
+    }
+
+    if (iflag){
+        if(cflag){
+            if (countOccurence > 1)
                 printf(1, "%d %s\n", countOccurence, prev);
-                countOccurence = 1;
-            }
-            if (i == n) //if curr line is the last line
-            {
-                if (countOccurence > 1)
-                    printf(1, "%d %s\n", countOccurence, prev);
-                else
-                    printf(1, "%d %s\n", countOccurence, curr);
-            }
+            else
+                printf(1, "%d %s\n", countOccurence, curr);
         }
-        else if (dflag)
+        else if (dflag){
+            if (duplicate) //if curr line is the last line and is equal to prev
+                printf(1, "%s\n", prev);
+        }else{
+            if (1) //if curr line is the last line
+                printf(1, "%s\n", prev);
+        }
+    }
+    else if(cflag){
+        if (1) //if curr line is the last line
         {
-            if (!strcmp(prev, curr))
-                duplicate = 1;
-            else if (duplicate)
-            {
-                printf(1, "%s\n", prev);
-                duplicate = 0;
-            }
-            if (i == n && duplicate) //if curr line is the last line and is equal to prev
-                printf(1, "%s\n", prev);
+            if (countOccurence > 1)
+                printf(1, "%d %s\n", countOccurence, prev);
+            else
+                printf(1, "%d %s\n", countOccurence, curr);
         }
-        else
-        {
-            if (strcmp(prev, curr) && strcmp(prev, ""))
+    }
+    else if(dflag){
+        if (duplicate) //if curr line is the last line and is equal to prev
                 printf(1, "%s\n", prev);
-            if (i == n) //if curr line is the last line
-                printf(1, "%s\n", curr);
-        }
-        strcpy(prev, curr);
+    }else{
+         //if curr line is the last line
+            printf(1, "%s\n", curr);
     }
 }
 
@@ -130,6 +175,8 @@ int main(int argc, char *argv[])
 {
     int fd = 0, i;
 
+    for (i = 0; i < argc; ++i){
+    }
     char *filename = 0;
 
     int cflag = 0, dflag = 0, iflag = 0;

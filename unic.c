@@ -79,11 +79,18 @@ main(int argc, char *argv[])
 {
    int fd,i;
 
+   for (int i = 0; i < argc; ++i)
+   {
+     printf(1,"%s\n",argv[i]);
+   }
+
   if(argc <= 1){
     unic(0,0,0,0);
     exit();
   }
  
+
+
   int typec,typed,typei;
   typec = typed = typei = 0;
   for(i = 1; i < argc; i++){
