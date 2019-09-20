@@ -23,41 +23,27 @@ int strcasecmp(char const *a, char const *b)
 
 void uniq(int fd, int cflag, int dflag, int iflag)
 {
-    int n, l, i;
-    char prev[512];
-    char curr[512];
+    int n, l = 0, i = 0;
+    char prev[1024];
+    char curr[1024];
     int countOccurence = 1;
     int duplicate = 0;
 
-    // n = read(fd, buf, sizeof(buf));
-    // if (n < 0)
-    // {
-    //     printf(1, "cat: read error\n");
-    //     exit();
-    // }
-    l = 0;
-    while((n = read(fd, buf, sizeof(buf))) > 0){
+    while ((n = read(fd, buf, sizeof(buf))) > 0)
+    {
         for (i = 0; i < n; i++)
         {
-            
-            // if(i==n-1 && buf[i]!='\n'){
 
-            // }else{
-            //     l=0;
-            // }
             while (buf[i] != '\n' && i < n) // read line by line
             {
                 curr[l] = buf[i];
                 l++;
                 i++;
             }
-            if(i==n){
+            if (i == 512) //continue reading the line
                 break;
-            }else{
-                curr[l] = '\0';
-                l = 0;
-            }
-            
+            curr[l] = '\0';
+            l = 0;
 
             if (iflag)
             {
@@ -70,13 +56,13 @@ void uniq(int fd, int cflag, int dflag, int iflag)
                         printf(1, "%d %s\n", countOccurence, prev);
                         countOccurence = 1;
                     }
-                    // if (i == n) //if curr line is the last line
-                    // {
-                    //     if (countOccurence > 1)
-                    //         printf(1, "%d %s\n", countOccurence, prev);
-                    //     else
-                    //         printf(1, "%d %s\n", countOccurence, curr);
-                    // }
+                    if (i == n) //if curr line is the last line
+                    {
+                        if (countOccurence > 1)
+                            printf(1, "%d %s\n", countOccurence, prev);
+                        else
+                            printf(1, "%d %s\n", countOccurence, curr);
+                    }
                 }
                 else if (dflag)
                 {
@@ -87,15 +73,15 @@ void uniq(int fd, int cflag, int dflag, int iflag)
                         printf(1, "%s\n", prev);
                         duplicate = 0;
                     }
-                    // if (i == n && duplicate) //if curr line is the last line and is equal to prev
-                    //     printf(1, "%s\n", prev);
+                    if (i == n && duplicate) //if curr line is the last line and is equal to prev
+                        printf(1, "%s\n", prev);
                 }
                 else
                 {
                     if (strcasecmp(prev, curr) && strcmp(prev, ""))
                         printf(1, "%s\n", prev);
-                    // if (i == n) //if curr line is the last line
-                    //     printf(1, "%s\n", prev);
+                    if (i == n) //if curr line is the last line
+                        printf(1, "%s\n", prev);
                 }
             }
             else if (cflag)
@@ -107,13 +93,13 @@ void uniq(int fd, int cflag, int dflag, int iflag)
                     printf(1, "%d %s\n", countOccurence, prev);
                     countOccurence = 1;
                 }
-                // if (i == n) //if curr line is the last line
-                // {
-                //     if (countOccurence > 1)
-                //         printf(1, "%d %s\n", countOccurence, prev);
-                //     else
-                //         printf(1, "%d %s\n", countOccurence, curr);
-                // }
+                if (i == n) //if curr line is the last line
+                {
+                    if (countOccurence > 1)
+                        printf(1, "%d %s\n", countOccurence, prev);
+                    else
+                        printf(1, "%d %s\n", countOccurence, curr);
+                }
             }
             else if (dflag)
             {
@@ -124,50 +110,18 @@ void uniq(int fd, int cflag, int dflag, int iflag)
                     printf(1, "%s\n", prev);
                     duplicate = 0;
                 }
-                // if (i == n && duplicate) //if curr line is the last line and is equal to prev
-                //     printf(1, "%s\n", prev);
+                if (i == n && duplicate) //if curr line is the last line and is equal to prev
+                    printf(1, "%s\n", prev);
             }
             else
             {
                 if (strcmp(prev, curr) && strcmp(prev, ""))
                     printf(1, "%s\n", prev);
-                // if (i == n) //if curr line is the last line
-                //     printf(1, "%s\n", curr);
+                if (i == n) //if curr line is the last line
+                    printf(1, "%s\n", curr);
             }
             strcpy(prev, curr);
         }
-    }
-
-    if (iflag){
-        if(cflag){
-            if (countOccurence > 1)
-                printf(1, "%d %s\n", countOccurence, prev);
-            else
-                printf(1, "%d %s\n", countOccurence, curr);
-        }
-        else if (dflag){
-            if (duplicate) //if curr line is the last line and is equal to prev
-                printf(1, "%s\n", prev);
-        }else{
-            if (1) //if curr line is the last line
-                printf(1, "%s\n", prev);
-        }
-    }
-    else if(cflag){
-        if (1) //if curr line is the last line
-        {
-            if (countOccurence > 1)
-                printf(1, "%d %s\n", countOccurence, prev);
-            else
-                printf(1, "%d %s\n", countOccurence, curr);
-        }
-    }
-    else if(dflag){
-        if (duplicate) //if curr line is the last line and is equal to prev
-                printf(1, "%s\n", prev);
-    }else{
-         //if curr line is the last line
-            printf(1, "%s\n", curr);
     }
 }
 
@@ -175,7 +129,8 @@ int main(int argc, char *argv[])
 {
     int fd = 0, i;
 
-    for (i = 0; i < argc; ++i){
+    for (i = 0; i < argc; ++i)
+    {
     }
     char *filename = 0;
 
