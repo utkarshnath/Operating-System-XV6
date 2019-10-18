@@ -64,15 +64,15 @@ void runcmd(struct cmd *cmd)
     ecmd = (struct execcmd *)cmd;
     if (ecmd->argv[0] == 0)
       exit(0);
-
-    char *args[MAXARGS];
     int i;
+    char *args[MAXARGS];
     for (i = 0; i < MAXARGS; i++)
     {
-      printf("%sfdsfsdfds", ecmd->argv[i]);
+      args[i] = NULL;
+    }
+    for (i = 0; i < MAXARGS && ecmd->argv[i] != NULL; i++)
+    {
       args[i] = ecmd->argv[i];
-      if (ecmd->argv[i] == "")
-        break;
     }
 
     execvp(ecmd->argv[0], args);
@@ -87,21 +87,62 @@ void runcmd(struct cmd *cmd)
     // Your code here ...
     int file_desc;
 
-    if(rcmd->fd==1)                  //output to file
-      file_desc = open(rcmd->file, O_RDWR | O_CREAT);
-    else
-      file_desc = open(rcmd->file, O_RDONLY);          // read from the file
+    if (rcmd->fd == 1) //output to file
+      file_desc = open(rcmd->file, O_RDWR | O_CREAT | O_TRUNC, 0666);
 
-    dup2(file_desc,rcmd->fd);
+    else
+      file_desc = open(rcmd->file, O_RDONLY); // read from the file
+
+    if (file_desc < 0)   // throw error if file could not be opened
+    {
+      fprintf(stderr, "File could not be opened \n");
+      exit(0);
+    }
+
+    dup2(file_desc, rcmd->fd);
 
     // rcmd->fd=file_desc;
     runcmd(rcmd->cmd);
+    close(rcmd->fd);
     break;
 
   case '|':
     pcmd = (struct pipecmd *)cmd;
-    fprintf(stderr, "pipe not implemented\n");
+
     // Your code here ...
+
+    pid_t pid1, pid2;
+    int pipefd[2];
+    pipe(pipefd);
+
+    pid1 = fork();
+    if (pid1 == 0)
+    {
+
+      dup2(pipefd[1], 1);
+      close(pipefd[0]);
+
+      runcmd(pcmd->left);
+      perror("exec");
+      exit(0);
+    }
+    // Create our second process.
+
+    pid2 = fork();
+    if (pid2 == 0)
+    {
+      wait(NULL);
+
+      dup2(pipefd[0], 0);
+      close(pipefd[1]);
+      runcmd(pcmd->right);
+      perror("exec");
+      exit(0);
+    }
+
+    close(pipefd[0]);
+    close(pipefd[1]);
+    // fprintf(stderr, "pipe not implemented\n");
     break;
   }
   exit(0);
