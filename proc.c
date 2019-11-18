@@ -50,6 +50,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->tickets = 20;
   release(&ptable.lock);
 
   // Allocate kernel stack.
@@ -275,6 +276,20 @@ scheduler(void)
     // Enable interrupts on this processor.
     sti();
 
+
+    int currTicketValue=0;
+    int totalTickets = 0;
+
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->state != RUNNABLE)
+        continue;
+      totalTickets += p->tickets;  
+    }
+
+    long ticketNumber = random_at_most(totalTickets);
+
+
+
     if (!foundproc) hlt();
     foundproc = 0;
 
@@ -283,6 +298,11 @@ scheduler(void)
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
+
+      currTicketValue += p->tickets;
+      if(currTicketValue<ticketNumber){
+        continue;
+      }
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
@@ -297,6 +317,7 @@ scheduler(void)
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       proc = 0;
+      break;
     }
     release(&ptable.lock);
 
